@@ -1,11 +1,44 @@
 version: '3.3'
+
+volumes:
+  pg_data:
+  # Новый volume — для статических файлов
+  static:
+  media:
+
 services:
 
-  frontend:
-    container_name: foodgram-front
-    build: ../frontend
+  db:
+    # Из какого образа запустить контейнер:
+    image: postgres:13.10
+    # Файл (или список файлов) с переменными окружения
+    env_file: .env
+    # Какой volume подключить для этого контейнера
     volumes:
-      - ../frontend/:/app/result_build/
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    # Из какого Dockerfile собирать образ для этого контейнера:
+    build: ../backend/
+    env_file: .env
+    # Тут подключаем volume к backend
+    volumes:
+      - static:/backend_static
+      - media:/var/www/foodgram/media/
+    # Какие контейнеры нужно запустить до старта этого контейнера:
+    depends_on:
+      - db
+
+
+  frontend:
+    build: ../frontend
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static:/frontend_static
+    depends_on:
+      - db
+
   nginx:
     container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
@@ -15,3 +48,5 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/static
+      - media:/var/www/foodgram/media/
