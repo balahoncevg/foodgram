@@ -1,8 +1,6 @@
 import django_filters
 
-from django.db.models import Exists, OuterRef
-
-from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, TagRecipe
+from .models import Ingredient, Recipe, Tag, TagRecipe
 
 
 class IngredientFilter(django_filters.FilterSet):
@@ -49,7 +47,6 @@ class RecipeFilter(django_filters.FilterSet):
             for v_tag in validated_tags:
                 result = result.union(queryset.filter(tags__slug=v_tag))
             return result
-            # return queryset.filter(tags__slug__in=validated_tags).distinct()
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):

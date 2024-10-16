@@ -1,18 +1,13 @@
 import os
 import tempfile
 
-from django.contrib.auth.tokens import default_token_generator
-from django.db.models import (BooleanField, Case, Exists,
-                              IntegerField, OuterRef, Value, When)
+from django.db.models import Exists, OuterRef, Value
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from djoser.views import UserViewSet as DjoserUserViewSet
-from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny,
                                         IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -24,16 +19,13 @@ from .models import (
     Favorite, Follow, Ingredient, IngredientRecipe, Recipe,
     RecipeShortLink, ShoppingCart, Tag, User)
 from .serializers import (
-    AvatarSerializer,
-    FavoriteSerializer, FollowSerializer,
-    IngredientSerializer, IngrdientRecipeSerializer,
-    RecipeSerializer, ShoppingCartSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
     TagSerializer, UserSerializer,)
 
 from .paginators import CustomLimitPagination
-from .permissions import (
-    AdminOrReadOnly, AdminPermission, IsAuthor, ReadOnly, IsUser)
-from .utils import generate_short_link, send_confirmation_code
+from .permissions import (IsAuthor)
+from .utils import generate_short_link
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -55,6 +47,40 @@ class UserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False, methods=['get'],
+        permission_classes=[IsAuthenticated]
+    )
+    def subscriptions(self, request):
+        follows = Follow.objects.filter(
+            user=self.request.user
+        ).select_related('author')
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(follows, request)
+        result = []
+        for follow in page:
+            recipes = follow.author.recipes.all()
+            print(recipes)
+            recipes_serialized = RecipeSerializer(
+                recipes, many=True
+            ).data
+            print(recipes_serialized)
+            avatar_url = request.build_absolute_uri(
+                follow.author.avatar.url) if follow.author.avatar else None
+            author_data = ({
+                'email': follow.author.email,
+                'id': follow.author.id,
+                'username': follow.author.username,
+                'first_name': follow.author.first_name,
+                'last_name': follow.author.last_name,
+                'is_subscribed': True,
+                'recipes': recipes_serialized,
+                'recipes_count': follow.author.recipes.count(),
+                'avatar': avatar_url
+            })
+            result.append(author_data)
+        return paginator.get_paginated_response(result)
+
+    @action(
+        detail=False, methods=['get'],
         permission_classes=[IsAuthenticated])
     def me(self, request):
         if request.user.is_anonymous:
@@ -71,21 +97,6 @@ class UserViewSet(DjoserUserViewSet):
             data.update(
                 {'is_subscribed': False, 'avatar': None})
             return Response(data)
-
-    '''@action(detail=False, methods=['put', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def avatar(self, request):
-        if request.method == 'PUT':
-            serializer = AvatarSerializer(
-                request.user, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        if request.method == 'DELETE':
-            request.user.avatar.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)'''
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -398,7 +409,6 @@ class SubscibeAndDescribe(APIView):
     pagination_class = CustomLimitPagination
 
     def post(self, request, id):
-        print('fffffffffffffffffffffffffffffffff')
         author = get_object_or_404(User, id=id)
         if author == request.user:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -424,6 +434,14 @@ class SubscibeAndDescribe(APIView):
             recipes = author.recipes.all()
         recipes_serialised = RecipeSerializer(
             recipes, many=True).data
+        recipes_list = []
+        for recipe in recipes_serialised:
+            recipes_list.append({
+                'id': recipe['id'],
+                'name': recipe['name'],
+                'image': recipe['image'],
+                'cooking_time': recipe['cooking_time']
+            })
         return Response(
             {
                 'email': author.email,
@@ -432,7 +450,7 @@ class SubscibeAndDescribe(APIView):
                 'first_name': author.first_name,
                 'last_name': author.last_name,
                 'is_subscribed': True,
-                'recipes': recipes_serialised,
+                'recipes': recipes_list,
                 'recipes_count': author.recipes.count(),
                 'avatar': avatar_url,
             }, status=status.HTTP_201_CREATED
@@ -441,7 +459,8 @@ class SubscibeAndDescribe(APIView):
     def delete(self, request, id):
         author = get_object_or_404(User, id=id)
         try:
-            follow = get_object_or_404(Follow, author=author)
+            follow = get_object_or_404(
+                Follow, author=author, user=request.user)
             follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Http404:
@@ -452,7 +471,7 @@ class SubscriptionsView(APIView):
     permission_classes = [IsAuthenticated]
     pagination_class = CustomLimitPagination
 
-    def get(self, request):
+    def list(self, request):
         follows = Follow.objects.filter(
             user=self.request.user
         )

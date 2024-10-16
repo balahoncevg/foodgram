@@ -1,18 +1,12 @@
 import base64
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from django.core.files.base import ContentFile
-from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserSerializer as US
-from djoser.serializers import UserCreateSerializer as UCS
 from rest_framework import serializers, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
 
-from .constants import EMAIL_LENGTH, NAME_LENGTH
 from .models import (Favorite, Follow, Ingredient, IngredientRecipe,
                      Recipe, ShoppingCart, Tag, TagRecipe)
 
@@ -41,7 +35,6 @@ class AvatarSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
-    # avatar = AvatarSerializer(required=False, allow_null=True)
     avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
@@ -51,7 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'avatar', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        """Проверяем, подписан ли текущий пользователь на пользователя."""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             user = self.context['request'].user
@@ -112,10 +104,6 @@ class TagRecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    '''tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Tag.objects.all()
-    )'''
     author = UserSerializer(required=False)
     tags = serializers.SerializerMethodField()
     ingredients = serializers.SerializerMethodField()
@@ -192,11 +180,11 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'ингредиент не существует'
                 )
-            if ingredient['amount'] < 1:
+            if int(ingredient['amount']) < 1:
                 raise serializers.ValidationError(
                     'ингредиент не может быть в количестве менбше 1'
                 )
-            if ingredient['id'] in ingredient_ids:
+            if int(ingredient['id']) in ingredient_ids:
                 raise serializers.ValidationError(
                     'ингредиенты повторяются'
                 )
@@ -224,22 +212,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         return tags
 
     def validation_of_cooking_time(self, cooking_time):
-        if cooking_time < 1:
+        if int(cooking_time) < 1:
             raise serializers.ValidationError(
                 'время приготовления не может быть ниже 1'
             )
         return cooking_time
-
-    '''def validate(self, data):
-        if 'ingredients' not in data:
-            raise serializers.ValidationError(
-                'поле ингредиенты обязательно'
-            )
-        if 'tags' not in data:
-            raise serializers.ValidationError(
-                'поле теги обязательно'
-            )
-        return data'''
 
     def create(self, data):
         if 'ingredients' not in self.initial_data:
@@ -267,7 +244,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         recipe = Recipe.objects.create(**data)
         for ingredient_data in ingredienst_data:
-            if ingredient_data['amount'] < 1:
+            if int(ingredient_data['amount']) < 1:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             try:
                 ingredient = get_object_or_404(Ingredient, id=ingredient_data['id'])

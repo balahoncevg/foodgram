@@ -14,7 +14,7 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   backend:
-    build: ../backend/
+    image: balahoncevg/foodgram_backend
     env_file: .env
     volumes:
       - static:/backend_static
@@ -24,7 +24,7 @@ services:
 
 
   frontend:
-    build: ../frontend
+    image: balahoncevg/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
     volumes:

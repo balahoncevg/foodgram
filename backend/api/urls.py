@@ -5,7 +5,6 @@ from .views import (GetRecipeShortLink,
                     IngredientViewSet, RecipeViewSet, SubscibeAndDescribe,
                     SubscriptionsView, TagViewSet,
                     UserViewSet, AddAndDeleteAvatar)
-# UsersViewSet, AddAndDeleteAvatar, ApiSendTokenView, ApiUserCreateView,)
 
 
 app_name = 'api'
