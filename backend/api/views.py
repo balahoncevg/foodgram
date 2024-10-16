@@ -302,7 +302,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             title = recipe.name
             items = IngredientRecipe.objects.filter(recipe=recipe)
             for item in items:
-                one_recipe += f'{item.ingredient.name} {item.amount} {item.ingredient.measurement_unit}\n'
+                n = item.ingredient.name
+                m = item.ingredient.measurement_unit
+                one_recipe += f'{n} {item.amount} {m}\n'
             grociries += f'{title}: {one_recipe}\n'
         file_path = self.generate_txt(grociries)
         response = FileResponse(

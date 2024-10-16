@@ -247,7 +247,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             if int(ingredient_data['amount']) < 1:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             try:
-                ingredient = get_object_or_404(Ingredient, id=ingredient_data['id'])
+                ingredient = get_object_or_404(
+                    Ingredient, id=ingredient_data['id'])
                 IngredientRecipe.objects.create(
                     recipe=recipe,
                     ingredient=ingredient,
