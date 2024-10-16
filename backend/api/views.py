@@ -287,7 +287,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get',],
+        methods=['get'],
         url_path='download_shopping_cart',
         permission_classes=[IsAuthenticated]
     )
@@ -407,7 +407,7 @@ class GetRecipeShortLink(APIView):
 
 
 class SubscibeAndDescribe(APIView):
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
     pagination_class = CustomLimitPagination
 
     def post(self, request, id):
