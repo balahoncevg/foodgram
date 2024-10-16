@@ -20,7 +20,7 @@ javascript, HTML
 
 ## Ссылка на проект:
 
-https://myuniquehotsname.zapto.org
+http://myuniquehotsname.zapto.org
 
 ## Подробности запуска:
 
