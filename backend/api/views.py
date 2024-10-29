@@ -152,7 +152,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
     @action(
-        detail=True, methods=['post',],
+        detail=True, methods=['post', ],
         url_path='shopping_cart',
         permission_classes=[IsAuthenticated]
     )
@@ -190,7 +190,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        detail=True, methods=['post',],
+        detail=True, methods=['post', ],
         url_path='favorite',
         permission_classes=[IsAuthenticated]
     )
