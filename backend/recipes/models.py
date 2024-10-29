@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from backend.constants import EMAIL_LENGTH, MAX_INT, MIN_INT, NAME_LENGTH
-from users.models import User
+
+
+User = get_user_model()
 
 
 class Tag(models.Model):

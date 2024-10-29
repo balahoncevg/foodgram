@@ -1,5 +1,6 @@
 import os
 
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -15,7 +16,7 @@ from rest_framework.views import APIView
 from recipes.models import (
     Favorite, Ingredient, Recipe,
     RecipeShortLink, ShoppingCart, Tag)
-from users.models import Follow, User
+from users.models import Follow
 
 from .filters import IngredientFilter, RecipeFilter
 from .serializers import (
@@ -27,6 +28,9 @@ from .serializers import (
 from .paginators import PageLimitPagination
 from .permissions import (IsAuthor)
 from .utils import generate_file, generate_short_link, generate_txt
+
+
+User = get_user_model()
 
 
 class UserViewSet(DjoserUserViewSet):
