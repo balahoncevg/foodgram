@@ -1,6 +1,10 @@
 import os
-
+from distutils.util import strtobool
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,12 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kd9j3yfr13fj26vg*s(=^%q@plx23+#d2ybudv6d4f62vx_(22'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-kd9j3yfr13fj26vg*s(=^%q@plx23+#d2ybudv6d4f62vx_(22')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = strtobool(os.getenv('DEBUG', 'False'))
 
 ALLOWED_HOSTS = ['0.0.0.0.8000', 'localhost', '127.0.0.1', '89.169.161.190', '8.8.8.8', 'myuniquehotsname.zapto.org']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '0.0.0.0.8000,localhost,127.0.0.1,89.169.161.190,8.8.8.8,myuniquehotsname.zapto.org').split(',')
 
 
 # Application definition
@@ -32,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
 ]
 
 MIDDLEWARE = [
@@ -131,7 +138,7 @@ MEDIA_ROOT = '/var/www/foodgram/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -141,9 +148,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,
-
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

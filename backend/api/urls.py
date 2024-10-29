@@ -1,10 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (GetRecipeShortLink,
+from .views import (AddAndDeleteAvatar, GetRecipeShortLink,
                     IngredientViewSet, RecipeViewSet, SubscibeAndDescribe,
-                    SubscriptionsView, TagViewSet,
-                    UserViewSet, AddAndDeleteAvatar)
+                    TagViewSet, UserViewSet)
 
 
 app_name = 'api'
@@ -26,7 +25,5 @@ urlpatterns = [
          SubscibeAndDescribe.as_view(),
          name='subscribe_and_describe'),
     path('users/me/avatar/', AddAndDeleteAvatar.as_view(),
-         name='add_and_delete_avatar'),
-    path('users/subscriptions/', SubscriptionsView.as_view(),
-         name='subscriptions')
+         name='add_and_delete_avatar')
 ]

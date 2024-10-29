@@ -1,4 +1,4 @@
-EMAIL_LENGTH = 254
+'''EMAIL_LENGTH = 254
 NAME_LENGTH = 150
 SUBJECT = 'Код подтверждения.'
 MESSAGE = (
@@ -9,3 +9,4 @@ MESSAGE = (
 FROM_EMAIL = 'auth@api_foodgram.ru'
 REGEX_ME = r'^(?!me$).*'
 ME_HELP = 'Нельзя использовать имя "me"'
+'''

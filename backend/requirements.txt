@@ -3,6 +3,9 @@ django-filter==23.5
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.3.0
 django-cors-headers==3.13.0
+django-extra-fields
 psycopg2-binary==2.9.3
 djoser==2.1.0
 Pillow==9.0.0
+python-dotenv
+gunicorn==20.1.0

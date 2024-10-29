@@ -5,7 +5,8 @@ from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 
-from .models import Favorite, Ingredient, Recipe, Tag, User
+from recipes.models import Favorite, Ingredient, Recipe, Tag
+from users.models import User
 
 
 class UserAdmin(admin.ModelAdmin):
