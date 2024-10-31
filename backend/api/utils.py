@@ -2,8 +2,6 @@ import io
 import random
 import string
 
-from django.http import HttpResponse
-
 from recipes.models import IngredientRecipe
 
 
@@ -43,7 +41,4 @@ def generate_file(carts):
     file_buffer = io.StringIO()
     file_buffer.write(grocieries_to_print)
     file_buffer.seek(0)
-
-    response = HttpResponse(file_buffer, content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
-    return response
+    return file_buffer

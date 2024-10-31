@@ -4,7 +4,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.constants import MAX_INT, MIN_INT
+from recipes.constants import (
+    MAX_COOCING_TIME,
+    MAX_INGREDIENT_AMOUNT,
+    MIN_COOCING_TIME,
+    MIN_INGREDIENT_AMOUNT
+)
 from recipes.models import (Favorite, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
 from users.models import Follow
@@ -121,9 +126,11 @@ class IngrdientRecipeSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(
         validators=[
             MinValueValidator(
-                MIN_INT, message=f'Ингредиентов - не менее {MIN_INT}!'),
+                MIN_INGREDIENT_AMOUNT,
+                message=f'Ингредиентов - не менее {MIN_INGREDIENT_AMOUNT}!'),
             MaxValueValidator(
-                MAX_INT, message=f'Ингредиентов - не более {MAX_INT}!')
+                MAX_INGREDIENT_AMOUNT,
+                message=f'Ингредиентов - не более {MAX_INGREDIENT_AMOUNT}!')
         ]
     )
 
@@ -273,13 +280,13 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return tags
 
     def validate_cooking_time(self, cooking_time):
-        if int(cooking_time) < MIN_INT:
+        if int(cooking_time) < MIN_COOCING_TIME:
             raise serializers.ValidationError(
-                f'Время приготовления не может быть меньше {MIN_INT}.'
+                f'Время приготовления не может быть меньше {MIN_COOCING_TIME}.'
             )
-        if int(cooking_time) > MAX_INT:
+        if int(cooking_time) > MAX_COOCING_TIME:
             raise serializers.ValidationError(
-                f'Время приготовления не может быть больше {MAX_INT}.'
+                f'Время приготовления не может быть больше {MAX_COOCING_TIME}.'
             )
         return cooking_time
 

@@ -2,7 +2,15 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .constants import EMAIL_LENGTH, MAX_INT, MIN_INT, NAME_LENGTH
+from users.constants import EMAIL_LENGTH, NAME_LENGTH
+
+from .constants import (
+    DEFAULT_INGREDIENT_AMOUNT,
+    MAX_COOCING_TIME,
+    MAX_INGREDIENT_AMOUNT,
+    MIN_COOCING_TIME,
+    MIN_INGREDIENT_AMOUNT
+)
 
 
 User = get_user_model()
@@ -72,12 +80,14 @@ class Recipe(models.Model):
         verbose_name='время приготовления',
         validators=[
             MaxValueValidator(
-                MAX_INT,
-                message=f'Время приготовления не должно быть больше {MAX_INT}.'
+                MAX_COOCING_TIME,
+                message=('Время приготовления '
+                         f'не должно быть больше {MAX_COOCING_TIME}.')
             ),
             MinValueValidator(
-                MIN_INT,
-                message=f'Время приготовления не должно быть меньше {MIN_INT}.'
+                MIN_COOCING_TIME,
+                message=('Время приготовления '
+                         f'не должно быть меньше {MIN_COOCING_TIME}.')
             )
         ])
 
@@ -94,15 +104,17 @@ class IngredientRecipe(models.Model):
         Recipe, on_delete=models.CASCADE,
     )
     amount = models.PositiveIntegerField(
-        default=1,
+        default=DEFAULT_INGREDIENT_AMOUNT,
         validators=[
             MaxValueValidator(
-                MAX_INT,
-                message=f'Объем ингредиента не должен быть больше {MAX_INT}.'
+                MAX_INGREDIENT_AMOUNT,
+                message=('Объем ингредиента не должен '
+                         f'быть больше {MAX_INGREDIENT_AMOUNT}.')
             ),
             MinValueValidator(
-                MIN_INT,
-                message=f'Объем ингредиента не должен быть меньше {MIN_INT}.'
+                MIN_INGREDIENT_AMOUNT,
+                message=('Объем ингредиента не должен '
+                         f'быть меньше {MIN_INGREDIENT_AMOUNT}.')
             )])
 
     class Meta:

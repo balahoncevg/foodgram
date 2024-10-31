@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -137,7 +137,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         carts = ShoppingCart.objects.filter(
             user=self.request.user
         ).select_related('recipe')
-        return generate_file(carts)
+        file_buffer = generate_file(carts)
+        response = HttpResponse(file_buffer, content_type='text/plain')
+        response[
+            'Content-Disposition'
+        ] = 'attachment; filename="ingredients.txt"'
+        return response
 
     @action(
         detail=True, methods=['post', ],
