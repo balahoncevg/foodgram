@@ -19,7 +19,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-kd9j3yfr13fj26vg*s(=^%q@pl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = strtobool(os.getenv('DEBUG', 'False'))
 
-ALLOWED_HOSTS = ['0.0.0.0.8000', 'localhost', '127.0.0.1', '89.169.161.190', '8.8.8.8', 'myuniquehotsname.zapto.org']
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '0.0.0.0.8000,localhost,127.0.0.1,89.169.161.190,8.8.8.8,myuniquehotsname.zapto.org').split(',')
 
 
@@ -129,7 +128,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'backend_static')
 
 MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT = '/var/www/foodgram/media/'
 
 

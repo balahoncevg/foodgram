@@ -1,8 +1,6 @@
-import os
-
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.http import FileResponse, Http404
+from django.http import Http404
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -19,15 +17,14 @@ from recipes.models import (
 from users.models import Follow
 
 from .filters import IngredientFilter, RecipeFilter
+from .paginators import PageLimitPagination
+from .permissions import (IsAuthor)
 from .serializers import (
     FavoriteSerializer, FollowSerializer, IngredientSerializer,
     RecipeCreateUpdateSerializer, RecipeReadSerializer,
     ShoppingCartSerializer, SubscriptionSerializer,
     TagSerializer, UserSerializer)
-
-from .paginators import PageLimitPagination
-from .permissions import (IsAuthor)
-from .utils import generate_file, generate_short_link, generate_txt
+from .utils import generate_file, generate_short_link
 
 
 User = get_user_model()
@@ -40,7 +37,8 @@ class UserViewSet(DjoserUserViewSet):
     pagination_class = PageLimitPagination
 
     def get_serializer_context(self):
-        '''Используется для передачи данных о пользователе.'''
+        """Используется для передачи данных о пользователе."""
+
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
@@ -72,10 +70,6 @@ class AddAndDeleteAvatar(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
-        if not request.data:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
         serializer = UserSerializer(
             request.user, data=request.data,
             context={'request': request}, partial=True)
@@ -143,13 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         carts = ShoppingCart.objects.filter(
             user=self.request.user
         ).select_related('recipe')
-        grociries = generate_file(carts)
-        file_path = generate_txt(grociries)
-        response = FileResponse(
-            open(file_path, 'rb'), as_attachment=True,
-            filename='ingredients.txt')
-        os.remove(file_path)
-        return response
+        return generate_file(carts)
 
     @action(
         detail=True, methods=['post', ],
@@ -166,13 +154,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            image_url = request.build_absolute_uri(recipe.image.url)
             return Response(
-                {
-                    'id': recipe.id,
-                    'name': recipe.name,
-                    'image': image_url,
-                    'cooking_time': recipe.cooking_time},
+                serializer.data,
                 status=status.HTTP_201_CREATED
             )
 
@@ -204,13 +187,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            image_url = request.build_absolute_uri(recipe.image.url)
             return Response(
-                {
-                    'id': recipe.id,
-                    'name': recipe.name,
-                    'image': image_url,
-                    'cooking_time': recipe.cooking_time},
+                serializer.data,
                 status=status.HTTP_201_CREATED
             )
 

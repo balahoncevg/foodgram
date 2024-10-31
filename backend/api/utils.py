@@ -1,22 +1,10 @@
+import io
 import random
 import string
-import tempfile
+
+from django.http import HttpResponse
 
 from recipes.models import IngredientRecipe
-
-'''from django.core.mail import send_mail
-
-from .constants import FROM_EMAIL, MESSAGE, SUBJECT
-
-
-def send_confirmation_code(email, confirmation_code) -> None:
-    send_mail(
-        subject=SUBJECT,
-        message=MESSAGE.format(confirmation_code),
-        from_email=FROM_EMAIL,
-        recipient_list=[email],
-        fail_silently=True,
-    )'''
 
 
 def generate_short_link():
@@ -25,23 +13,37 @@ def generate_short_link():
 
 
 def generate_file(carts):
-    grociries = ''
-    for recipe in carts:
-        recipe = recipe.recipe
-        one_recipe = ''
-        title = recipe.name
+    groceries = []
+    for grocery in carts:
+        recipe = grocery.recipe
         items = IngredientRecipe.objects.filter(recipe=recipe)
         for item in items:
-            n = item.ingredient.name
-            m = item.ingredient.measurement_unit
-            one_recipe += f'{n} {item.amount} {m}\n'
-        grociries += f'{title}: {one_recipe}\n'
-    return grociries
+            groceries.append([
+                item.ingredient.name,
+                item.amount,
+                item.ingredient.measurement_unit
+            ])
+    final_grocieries = {}
+    grocieries_names = []
+    for grocery in groceries:
+        if grocery[0] not in grocieries_names:
+            grocieries_names.append(grocery[0])
+            final_grocieries.update(
+                {grocery[0]: [grocery[1], grocery[2]]}
+            )
+        else:
+            final_grocieries[grocery[0]][0] += grocery[1]
+    final_grocieries = sorted(final_grocieries.items())
+    grocieries_to_print = ''
+    for grocery in final_grocieries:
+        am = grocery[1][0]
+        mu = grocery[1][1]
+        grocieries_to_print += f'{grocery[0]} - {am} {mu}\n'
 
+    file_buffer = io.StringIO()
+    file_buffer.write(grocieries_to_print)
+    file_buffer.seek(0)
 
-def generate_txt(grociries):
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode='w', suffix='.txt'
-    ) as temp_file:
-        temp_file.write(grociries)
-        return temp_file.name
+    response = HttpResponse(file_buffer, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
+    return response

@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from backend.constants import EMAIL_LENGTH, MAX_INT, MIN_INT, NAME_LENGTH
+from .constants import EMAIL_LENGTH, MAX_INT, MIN_INT, NAME_LENGTH
 
 
 User = get_user_model()
@@ -69,19 +69,21 @@ class Recipe(models.Model):
         verbose_name='теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='время приготовления')
+        verbose_name='время приготовления',
+        validators=[
+            MaxValueValidator(
+                MAX_INT,
+                message=f'Время приготовления не должно быть больше {MAX_INT}.'
+            ),
+            MinValueValidator(
+                MIN_INT,
+                message=f'Время приготовления не должно быть меньше {MIN_INT}.'
+            )
+        ])
 
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
-
-    def clean(self):
-        if self.cooking_time < MIN_INT or self.cooking_time > MAX_INT:
-            raise ValidationError('Неадекватное время приготовления')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
 
 
 class IngredientRecipe(models.Model):
@@ -91,19 +93,21 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE,
     )
-    amount = models.PositiveIntegerField(default=1)
+    amount = models.PositiveIntegerField(
+        default=1,
+        validators=[
+            MaxValueValidator(
+                MAX_INT,
+                message=f'Объем ингредиента не должен быть больше {MAX_INT}.'
+            ),
+            MinValueValidator(
+                MIN_INT,
+                message=f'Объем ингредиента не должен быть меньше {MIN_INT}.'
+            )])
 
     class Meta:
         verbose_name = 'ингредиент в рецепте'
         verbose_name_plural = 'ингдиенты в рецепте'
-
-    def clean(self):
-        if self.amount < MIN_INT or self.amount > MAX_INT:
-            raise ValidationError('Неадекватное время приготовления')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
 
 
 class RecipeShortLink(models.Model):

@@ -43,5 +43,5 @@ services:
       - static:/static
       - media:/var/www/foodgram/media/
     depends_on:
-      - db
+      - backend
       - frontend

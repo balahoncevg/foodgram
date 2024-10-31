@@ -1,6 +1,6 @@
 import django_filters
 
-from django.db.models import Exists, OuterRef, Value
+from django.db.models import Exists, OuterRef
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart
 
@@ -36,7 +36,7 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         user = self.request.user
-        if user.is_authenticated:
+        if user.is_authenticated and value:
             queryset = queryset.annotate(
                 is_favorited=Exists(
                     Favorite.objects.filter(
@@ -45,16 +45,12 @@ class RecipeFilter(django_filters.FilterSet):
                     )
                 )
             )
-        else:
-            queryset = queryset.annotate(
-                is_favorited=Value(False))
-        if value == 1:
             return queryset.filter(is_favorited=True)
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
-        if user.is_authenticated:
+        if user.is_authenticated and value:
             queryset = queryset.annotate(
                 is_in_shopping_cart=Exists(
                     ShoppingCart.objects.filter(
@@ -63,9 +59,5 @@ class RecipeFilter(django_filters.FilterSet):
                     )
                 )
             )
-        else:
-            queryset = queryset.annotate(
-                is_in_shopping_cart=Value(False))
-        if value == 1:
             return queryset.filter(is_in_shopping_cart=True)
         return queryset

@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from backend.constants import MAX_INT, MIN_INT
+from recipes.constants import MAX_INT, MIN_INT
 from recipes.models import (Favorite, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
 from users.models import Follow
@@ -14,7 +14,7 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    '''Сериализатор пользователя.'''
+    """Сериализатор пользователя."""
 
     is_subscribed = serializers.SerializerMethodField()
     avatar = Base64ImageField(required=False, allow_null=True)
@@ -61,6 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'password': 'Обязательное поле.'}
             )
+        request = self.context.get('request')
+        if request and request.method == 'PUT':
+            if not request.data:
+                raise serializers.ValidationError(
+                    'Поле "avatar" должно присутствовать в запросе.'
+                )
         return attrs
 
     def create(self, validated_data):
@@ -77,10 +83,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    '''
+    """
     Сериализатор тегов.
     Создавать новые теги может только администратор.
-    '''
+    """
 
     class Meta:
         model = Tag
@@ -88,10 +94,10 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    '''
+    """
     Сериализатор ингредиентов.
     Создавать новые ингредиенты может только администратор.
-    '''
+    """
 
     class Meta:
         model = Ingredient
@@ -99,7 +105,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngrdientRecipeSerializer(serializers.ModelSerializer):
-    '''Сериализатор для связывающей модели рецепт-ингредиент.'''
+    """Сериализатор для связывающей модели рецепт-ингредиент."""
 
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
@@ -114,8 +120,10 @@ class IngrdientRecipeSerializer(serializers.ModelSerializer):
     )
     amount = serializers.IntegerField(
         validators=[
-            MinValueValidator(MIN_INT, message='Ингредиентов - не менее 1!'),
-            MaxValueValidator(MAX_INT, message='Ингредиентов - не более 1000!')
+            MinValueValidator(
+                MIN_INT, message=f'Ингредиентов - не менее {MIN_INT}!'),
+            MaxValueValidator(
+                MAX_INT, message=f'Ингредиентов - не более {MAX_INT}!')
         ]
     )
 
@@ -125,7 +133,7 @@ class IngrdientRecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
-    '''Сериализатор для чтения рецепта.'''
+    """Сериализатор для чтения рецепта."""
 
     author = UserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -174,11 +182,11 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
-    '''
+    """
     Сериализатор для создания, редактирования и удаления рецептов.
     Создать рецепт можно только с использованием
     добавленных администратором тегов и ингредиентов.
-    '''
+    """
 
     author = UserSerializer(read_only=True)
     tags = serializers.PrimaryKeyRelatedField(
@@ -267,11 +275,11 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_cooking_time(self, cooking_time):
         if int(cooking_time) < MIN_INT:
             raise serializers.ValidationError(
-                'Время приготовления не может быть меньше 1.'
+                f'Время приготовления не может быть меньше {MIN_INT}.'
             )
         if int(cooking_time) > MAX_INT:
             raise serializers.ValidationError(
-                'Время приготовления не может быть больше 1000.'
+                f'Время приготовления не может быть больше {MAX_INT}.'
             )
         return cooking_time
 
@@ -298,13 +306,13 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create_ingredient_recipe(self, ingredients_data, recipe):
-        ir_list = []
+        ingredient_recipe_bounds = []
         for ingredient_data in ingredients_data:
-            ir_list.append(IngredientRecipe(
+            ingredient_recipe_bounds.append(IngredientRecipe(
                 recipe=recipe, ingredient=ingredient_data['ingredient'],
                 amount=ingredient_data['amount']
             ))
-        IngredientRecipe.objects.bulk_create(ir_list)
+        IngredientRecipe.objects.bulk_create(ingredient_recipe_bounds)
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredientrecipe_set')
@@ -348,7 +356,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    '''Сериализатор для списка избранного.'''
+    """Сериализатор для списка избранного."""
 
     id = serializers.IntegerField(source='author.id', read_only=True)
     email = serializers.CharField(
@@ -405,7 +413,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    '''Сериализатор списка покупок.'''
+    """Сериализатор списка покупок."""
 
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all()
@@ -430,9 +438,19 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return ShoppingCart.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        recipe = instance.recipe
+        request = self.context.get('request')
+        image_url = request.build_absolute_uri(recipe.image.url)
+        return {
+            'id': recipe.id,
+            'name': recipe.name,
+            'image': image_url,
+            'cooking_time': recipe.cooking_time}
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    '''Сериализатор избранного.'''
+    """Сериализатор избранного."""
 
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all()
@@ -458,9 +476,19 @@ class FavoriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Favorite.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        recipe = instance.recipe
+        request = self.context.get('request')
+        image_url = request.build_absolute_uri(recipe.image.url)
+        return {
+            'id': recipe.id,
+            'name': recipe.name,
+            'image': image_url,
+            'cooking_time': recipe.cooking_time}
+
 
 class FollowSerializer(serializers.ModelSerializer):
-    '''Сериализатор подписок.'''
+    """Сериализатор подписок."""
 
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
