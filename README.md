@@ -4,34 +4,34 @@
 
 ### Краткое описание (Brief Description):
 
-####ru
+#### ru
 Проект Foodgram позволяет вам создавать, просматривать и добавлять в избранное кулинарные рецепты. Поддерживает возможности фильтрации по тегам и составления списка покупок.
 
-####en
+#### en
 The Foodgram project allows you to create, view, and favorite culinary recipes. It supports filtering by tags and generating shopping lists.
 
 ### Использованные технологии:
 
-####ru
+#### ru
 Бэкенд написан с использованием следующих технологий:
 
-####en
+#### en
 Backend developed using the following technologies
 
 - Python 3.10, Django 3.2.3, DjangoRestFramework 2.12.4
 
-####ru
+#### ru
 Фронтенд написан с использованием следующих технологий:
 
-####en
+#### en
 Frontend developed using
 
 - javascript, HTML
 
-####ru
+#### ru
 Запуск проекта осуществляется с помощью nginx и docker
 
-####en
+#### en
 The project is deployed using Nginx and Docker
 
 
@@ -43,10 +43,10 @@ http://myuniquehotsname.zapto.org
 
 ### Как запустить проект (How to Launch the Project):
 
-####ru
+#### ru
 Клонировать репозиторий(если используется docker-compose.yml) и перейти в него в командной строке или скопировать только файл docker-compose.production.yml:
 
-####en
+#### en
 Clone the repository (if using docker-compose.yml) and navigate into it via the command line, or copy only the docker-compose.production.yml file:
 
 ```
@@ -57,13 +57,13 @@ git clone https://github.com/balahoncevg/foodgram.git
 cd foodgram
 ```
 
-####ru
+#### ru
 Выполнить последовательно команды:
 
 Примечание:
 для запуска можно использовать файлы docker-compose.production.yml(как в примере) и docker-compose.yml
 
-####en
+#### en
 Run the following commands in sequence:
 
 Note:
@@ -75,10 +75,10 @@ sudo docker compose -f docker-compose.production.yml down
 sudo docker compose -f docker-compose.production.yml up -d
 ```
 
-####ru
+#### ru
 Выполнить миграции и собрать статические файлы:
 
-####en
+#### en
 Run migrations and collect static files:
 
 ```
@@ -101,17 +101,17 @@ docker-compose.production.yml is designed for use on remote servers. It doesn't 
 
 ## Использование (Usage):
 
-####ru
+#### ru
 Для полноценного использования пректа необходимо зарегестрироваться на сайте (создать логи и пароль). После этого ползователю станут доступны возможности создавать рецепты и списки избранного. для создания рецепта необходимо нажать на кнопку "Добавить рецепт", после чего указать необходимые данные. Созданые рецепты можно удалать и редактировать.
 
-####en
+#### en
 To fully utilize the project, register on the site (create a login and password). After registration, users can create recipes and favorite lists. To create a recipe, click the "Add Recipe" button and enter the required details. Created recipes can be deleted or edited.
 
 
 ## Об авторе (About the Author):
 
-####ru
+#### ru
 Студент Яндекс.Практикума на направлении Python Backend
 
-####en
+#### en
 A Yandex.Practicum student specializing in Python Backend development
