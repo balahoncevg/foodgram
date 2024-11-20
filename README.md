@@ -34,11 +34,6 @@ Frontend developed using
 #### en
 The project is deployed using Nginx and Docker
 
-
-## Ссылка на проект (Project Link):
-
-http://myuniquehotsname.zapto.org
-
 ## Подробности запуска (Launch Details):
 
 ### Как запустить проект (How to Launch the Project):
